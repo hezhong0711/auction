@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS pay_message
+(
+    id      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    content VARCHAR(255)
+);

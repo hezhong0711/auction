@@ -1,5 +1,6 @@
 package com.tw.auction.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tw.auction.base.TestBase;
 import com.tw.enums.AuctionStatus;
 import com.tw.enums.MarginStatus;
@@ -10,6 +11,8 @@ import com.tw.feigns.dtos.PayOnlineResponseFeignDto;
 import com.tw.mqs.PayOnlineMessageSender;
 import com.tw.repository.AuctionApply;
 import com.tw.repository.AuctionApplyRespository;
+import com.tw.repository.PayMessageRepository;
+import com.tw.repository.entities.PayMessage;
 import com.tw.services.AuctionService;
 import com.tw.services.models.PayMarginModel;
 import com.tw.services.models.PayMarginResultModel;
@@ -32,6 +35,9 @@ public class AuctionServiceTest extends TestBase {
 
     @MockBean
     AuctionApplyRespository auctionApplyRespository;
+
+    @MockBean
+    PayMessageRepository payMessageRepository;
 
     @MockBean
     PayOnlineClient payOnlineClient;
@@ -105,7 +111,7 @@ public class AuctionServiceTest extends TestBase {
     }
 
     @Test
-    public void should_refund_margin_success_given_not_during_auction() throws TimeoutException {
+    public void should_refund_margin_success_given_not_during_auction() throws TimeoutException, JsonProcessingException {
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
@@ -127,7 +133,7 @@ public class AuctionServiceTest extends TestBase {
 
 
     @Test
-    public void should_refund_margin_failed_given_during_auction() throws TimeoutException {
+    public void should_refund_margin_failed_given_during_auction() throws JsonProcessingException {
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
@@ -143,4 +149,23 @@ public class AuctionServiceTest extends TestBase {
 
     }
 
+    @Test
+    public void should_refund_margin_success_given_not_during_auction_and_pay_online_system_unavailable() throws JsonProcessingException {
+        long accidentItemId = 1L;
+
+        Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
+                .id(1L).marginStatus(MarginStatus.PAY).auctionStatus(AuctionStatus.NOT_START).accidentItemId(accidentItemId)
+                .build()));
+
+        Mockito.when(payMessageRepository.saveAndFlush(any())).thenReturn(PayMessage.builder().content("1").build());
+
+        Mockito.when(payOnlineMessageSender.send(any())).thenReturn(false);
+
+        RefundMarginModel refundMarginModel = RefundMarginModel.builder().auctionItemId(accidentItemId).build();
+        RefundMarginResultModel refundMarginResultModel = auctionService.refundMargin(refundMarginModel);
+
+        Assertions.assertNotNull(refundMarginResultModel);
+        Assertions.assertEquals(refundMarginResultModel.getRefundResult(), RefundResult.SUCCESS);
+
+    }
 }

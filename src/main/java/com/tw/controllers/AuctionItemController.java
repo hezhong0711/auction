@@ -1,5 +1,6 @@
 package com.tw.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tw.controllers.dtos.PayMarginResponse;
 import com.tw.controllers.dtos.RefundMarginResponse;
 import com.tw.enums.PaymentResult;
@@ -44,7 +45,7 @@ public class AuctionItemController {
     }
 
     @PostMapping("/{aid}/margin-refund")
-    public ResponseEntity<RefundMarginResponse> refundMargin(@PathVariable("aid") Long auctionItemId) {
+    public ResponseEntity<RefundMarginResponse> refundMargin(@PathVariable("aid") Long auctionItemId) throws JsonProcessingException {
         RefundMarginModel refundMarginModel = RefundMarginModel.builder().auctionItemId(auctionItemId).build();
         RefundMarginResultModel refundMarginResultModel = auctionService.refundMargin(refundMarginModel);
         RefundMarginResponse refundMarginResponse = RefundMarginResponse.builder().build();
