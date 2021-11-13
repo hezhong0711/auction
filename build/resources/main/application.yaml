@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/tw_auction?characterEncoding=utf8&serverTimezone=UTC
+    name: order_ticket
+    initial-size: 10
+    max-active: 250
+    max-wait: 1000
+    min-idle: 10
+    test-on-borrow: true
+    validation-query: SELECT 1
+    username: root
+    password: pass
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: validate
+        jdbc:
+          batch_size: 20
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+
+  flyway:
+    locations: classpath:db/migration,classpath:db/data
+    out-of-order: true
+
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+    serialization:
+      write-dates-as-timestamps: false
+    mapper:
+      accept-case-insensitive-enums: true
+    default-property-inclusion: non_null
+
+
+# Service Bus
+message:
+  broker:
+    default: servicebus
+
+logging:
+  config: classpath:logback-json.xml
+
+feign:
+  shipping:
+    url: http://localhost:8082
+
+server:
+  port: 31111
