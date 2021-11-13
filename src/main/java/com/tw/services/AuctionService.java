@@ -40,6 +40,7 @@ public class AuctionService {
             auctionApplyRespository.save(auctionApply);
         } catch (TimeoutException e) {
             e.printStackTrace();
+            payMarginResultModel.setPaymentResult(PaymentResult.TIME_OUT);
         }
 
         return payMarginResultModel;

@@ -74,4 +74,25 @@ public class AuctionServiceTest extends TestBase {
         Assertions.assertEquals(payMarginResultModel.getPaymentResult(), PaymentResult.FAIL);
 
     }
+
+    @Test
+    public void should_return_time_out_status_given_pay_online_unavailable() throws TimeoutException {
+        long accidentItemId = 1L;
+
+        Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
+                .id(1L).marginStatus(MarginStatus.NOT_PAY).accidentItemId(accidentItemId)
+                .build()));
+
+        Mockito.when(auctionApplyRespository.save(any())).thenReturn(AuctionApply.builder()
+                .id(1L).marginStatus(MarginStatus.NOT_PAY).accidentItemId(accidentItemId).build());
+
+        Mockito.when(payOnlineClient.pay(any())).thenThrow(TimeoutException.class);
+
+        PayMarginModel payMarginModel = PayMarginModel.builder().auctionItemId(accidentItemId).build();
+        PayMarginResultModel payMarginResultModel = auctionService.payMargin(payMarginModel);
+
+        Assertions.assertNotNull(payMarginResultModel);
+        Assertions.assertEquals(payMarginResultModel.getPaymentResult(), PaymentResult.TIME_OUT);
+
+    }
 }
