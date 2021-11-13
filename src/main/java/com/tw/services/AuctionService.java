@@ -31,6 +31,8 @@ public class AuctionService {
             PayOnlineResponseFeignDto payOnlineResponse = payOnlineClient.pay(payRequest);
             if ("SUCCESS".equals(payOnlineResponse.getCode())) {
                 payMarginResultModel.setPaymentResult(PaymentResult.SUCCESS);
+            } else if ("NO_ENOUGH_MONEY".equals(payOnlineResponse.getCode())) {
+                payMarginResultModel.setPaymentResult(PaymentResult.FAIL);
             }
         } catch (TimeoutException e) {
             e.printStackTrace();

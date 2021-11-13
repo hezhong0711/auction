@@ -33,9 +33,6 @@ public class AuctionServiceTest extends TestBase {
 
     @Test
     public void should_pay_margin_success_given_pay_online_success() throws TimeoutException {
-        //stub 依赖 Repository，当调用findById() 方法时返回竞拍申请Entity，当调用 save() 方法时返回更新成功结果；
-        // stub 依赖三方支付服务的 FeignClient，当调用微信支付接口时，返回支付成功结果；
-        // 实现 Service 缴纳保证金功能，返回缴纳结果为成功
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
@@ -53,6 +50,28 @@ public class AuctionServiceTest extends TestBase {
 
         Assertions.assertNotNull(payMarginResultModel);
         Assertions.assertEquals(payMarginResultModel.getPaymentResult(), PaymentResult.SUCCESS);
+
+    }
+
+    @Test
+    public void should_pay_margin_failed_given_pay_online_failed() throws TimeoutException {
+        long accidentItemId = 1L;
+
+        Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
+                .id(1L).marginStatus(MarginStatus.NOT_PAY).accidentItemId(accidentItemId)
+                .build()));
+
+        Mockito.when(auctionApplyRespository.save(any())).thenReturn(AuctionApply.builder()
+                .id(1L).marginStatus(MarginStatus.NOT_PAY).accidentItemId(accidentItemId).build());
+
+        Mockito.when(payOnlineClient.pay(any())).thenReturn(
+                PayOnlineResponseFeignDto.builder().code("NO_ENOUGH_MONEY").message("支付失败，余额不足").build());
+
+        PayMarginModel payMarginModel = PayMarginModel.builder().auctionItemId(accidentItemId).build();
+        PayMarginResultModel payMarginResultModel = auctionService.payMargin(payMarginModel);
+
+        Assertions.assertNotNull(payMarginResultModel);
+        Assertions.assertEquals(payMarginResultModel.getPaymentResult(), PaymentResult.FAIL);
 
     }
 }
