@@ -47,4 +47,23 @@ public class AuctionItemControllerTest extends TestBase {
                 .andExpect(jsonPath("$.code", is("SUCCESS")))
                 .andExpect(jsonPath("$.message", is("支付成功")));
     }
+
+    @Test
+    public void should_not_change_auction_apply_success_when_pay_margin_failed() throws Exception {
+
+        // given
+        long actionItemId = 2L;
+        PayMarginResultModel payMarginFailedModel = PayMarginResultModel.builder()
+                .paymentResult(PaymentResult.FAIL).build();
+
+        Mockito.when(auctionService.payMargin(any()))
+                .thenReturn(payMarginFailedModel);
+
+        // when
+        mockMvc.perform(post("/auction-items/" + actionItemId + "/margin-payment")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code", is("NO_ENOUGH_MONEY")))
+                .andExpect(jsonPath("$.message", is("支付失败，余额不足")));
+    }
 }
