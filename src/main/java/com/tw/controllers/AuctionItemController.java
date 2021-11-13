@@ -28,6 +28,10 @@ public class AuctionItemController {
             payMarginResponse.setCode("NO_ENOUGH_MONEY");
             payMarginResponse.setMessage("支付失败，余额不足");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(payMarginResponse);
+        } else if (payMarginResultModel.getPaymentResult().equals(PaymentResult.TIME_OUT)) {
+            payMarginResponse.setCode("PAYMENT_SYSTEM_NOT_AVAILABLE");
+            payMarginResponse.setMessage("与支付系统失去联系，请重试");
+            return ResponseEntity.internalServerError().body(payMarginResponse);
         }
 
         payMarginResponse.setCode("SUCCESS");

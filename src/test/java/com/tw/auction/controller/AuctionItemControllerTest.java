@@ -49,7 +49,7 @@ public class AuctionItemControllerTest extends TestBase {
     }
 
     @Test
-    public void should_not_change_auction_apply_success_when_pay_margin_failed() throws Exception {
+    public void should_not_change_auction_apply_when_pay_margin_failed() throws Exception {
 
         // given
         long actionItemId = 2L;
@@ -65,5 +65,24 @@ public class AuctionItemControllerTest extends TestBase {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", is("NO_ENOUGH_MONEY")))
                 .andExpect(jsonPath("$.message", is("支付失败，余额不足")));
+    }
+
+    @Test
+    public void should_not_change_auction_apply_when_pay_margin_time_out() throws Exception {
+
+        // given
+        long actionItemId = 3L;
+        PayMarginResultModel payMarginFailedModel = PayMarginResultModel.builder()
+                .paymentResult(PaymentResult.TIME_OUT).build();
+
+        Mockito.when(auctionService.payMargin(any()))
+                .thenReturn(payMarginFailedModel);
+
+        // when
+        mockMvc.perform(post("/auction-items/" + actionItemId + "/margin-payment")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code", is("PAYMENT_SYSTEM_NOT_AVAILABLE")))
+                .andExpect(jsonPath("$.message", is("与支付系统失去联系，请重试")));
     }
 }
