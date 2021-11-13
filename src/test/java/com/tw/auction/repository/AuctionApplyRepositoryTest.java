@@ -28,4 +28,18 @@ public class AuctionApplyRepositoryTest extends TestBase {
         assertNotNull(savedAuctionApply);
         assertEquals(MarginStatus.NOT_PAY, savedAuctionApply.getMarginStatus());
     }
+
+    @Test
+    public void should_update_auction_apply_success_given_status_is_not_pay() {
+        AuctionApply auctionApply = AuctionApply.builder()
+                .accidentItemId(1L)
+                .marginPrice(BigDecimal.valueOf(2000))
+                .build();
+
+        AuctionApply savedAuctionApply = auctionApplyRespository.save(auctionApply);
+        savedAuctionApply.setMarginStatus(MarginStatus.PAY);
+        AuctionApply updatedAuctionApply = auctionApplyRespository.save(auctionApply);
+        assertNotNull(updatedAuctionApply);
+        assertEquals(MarginStatus.PAY, savedAuctionApply.getMarginStatus());
+    }
 }

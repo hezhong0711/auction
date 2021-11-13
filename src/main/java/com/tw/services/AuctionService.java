@@ -1,5 +1,6 @@
 package com.tw.services;
 
+import com.tw.enums.MarginStatus;
 import com.tw.enums.PaymentResult;
 import com.tw.feigns.PayOnlineClient;
 import com.tw.feigns.dtos.PayOnlineRequestFeignDto;
@@ -30,10 +31,13 @@ public class AuctionService {
         try {
             PayOnlineResponseFeignDto payOnlineResponse = payOnlineClient.pay(payRequest);
             if ("SUCCESS".equals(payOnlineResponse.getCode())) {
+                auctionApply.setMarginStatus(MarginStatus.PAY);
                 payMarginResultModel.setPaymentResult(PaymentResult.SUCCESS);
             } else if ("NO_ENOUGH_MONEY".equals(payOnlineResponse.getCode())) {
+                auctionApply.setMarginStatus(MarginStatus.NOT_PAY);
                 payMarginResultModel.setPaymentResult(PaymentResult.FAIL);
             }
+            auctionApplyRespository.save(auctionApply);
         } catch (TimeoutException e) {
             e.printStackTrace();
         }
