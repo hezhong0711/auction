@@ -1,5 +1,6 @@
 package com.tw.repository;
 
+import com.tw.enums.AuctionStatus;
 import com.tw.enums.MarginStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,4 +34,7 @@ public class AuctionApply {
     private MarginStatus marginStatus;
 
     private BigDecimal marginPrice;
+
+    @Enumerated(EnumType.STRING)
+    private AuctionStatus auctionStatus;
 }

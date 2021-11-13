@@ -1,6 +1,7 @@
 package com.tw.auction.service;
 
 import com.tw.auction.base.TestBase;
+import com.tw.enums.AuctionStatus;
 import com.tw.enums.MarginStatus;
 import com.tw.enums.PaymentResult;
 import com.tw.enums.RefundResult;
@@ -108,7 +109,7 @@ public class AuctionServiceTest extends TestBase {
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
-                .id(1L).marginStatus(MarginStatus.PAY).accidentItemId(accidentItemId)
+                .id(1L).marginStatus(MarginStatus.PAY).auctionStatus(AuctionStatus.NOT_START).accidentItemId(accidentItemId)
                 .build()));
 
         Mockito.when(auctionApplyRespository.save(any())).thenReturn(AuctionApply.builder()
@@ -123,4 +124,23 @@ public class AuctionServiceTest extends TestBase {
         Assertions.assertEquals(refundMarginResultModel.getRefundResult(), RefundResult.SUCCESS);
 
     }
+
+
+    @Test
+    public void should_refund_margin_failed_given_during_auction() throws TimeoutException {
+        long accidentItemId = 1L;
+
+        Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
+                .id(1L).marginStatus(MarginStatus.PAY).auctionStatus(AuctionStatus.START).accidentItemId(accidentItemId)
+                .build()));
+
+
+        RefundMarginModel refundMarginModel = RefundMarginModel.builder().auctionItemId(accidentItemId).build();
+        RefundMarginResultModel refundMarginResultModel = auctionService.refundMargin(refundMarginModel);
+
+        Assertions.assertNotNull(refundMarginResultModel);
+        Assertions.assertEquals(refundMarginResultModel.getRefundResult(), RefundResult.FAIL);
+
+    }
+
 }

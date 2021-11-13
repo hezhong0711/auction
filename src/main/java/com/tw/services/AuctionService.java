@@ -1,5 +1,6 @@
 package com.tw.services;
 
+import com.tw.enums.AuctionStatus;
 import com.tw.enums.MarginStatus;
 import com.tw.enums.PaymentResult;
 import com.tw.enums.RefundResult;
@@ -57,12 +58,17 @@ public class AuctionService {
         AuctionApply auctionApply = auctionApplyRespository.findById(refundMarginModel.getAuctionItemId())
                 .orElseThrow(RuntimeException::new);
 
-        PayOnlineMessage payOnlineMessage = PayOnlineMessage.builder()
-                .type("wechat").price(auctionApply.getMarginPrice()).build();
-        boolean mqResult = payOnlineMessageSender.send(payOnlineMessage);
-        if (mqResult) {
-            return RefundMarginResultModel.builder().refundResult(RefundResult.SUCCESS).build();
+        if (auctionApply.getAuctionStatus().equals(AuctionStatus.NOT_START)) {
+            PayOnlineMessage payOnlineMessage = PayOnlineMessage.builder()
+                    .type("wechat").price(auctionApply.getMarginPrice()).build();
+            boolean mqResult = payOnlineMessageSender.send(payOnlineMessage);
+            if (mqResult) {
+                return RefundMarginResultModel.builder().refundResult(RefundResult.SUCCESS).build();
+            }
+        } else if (auctionApply.getAuctionStatus().equals(AuctionStatus.START)) {
+            return RefundMarginResultModel.builder().refundResult(RefundResult.FAIL).build();
         }
+
         return RefundMarginResultModel.builder().build();
     }
 }
