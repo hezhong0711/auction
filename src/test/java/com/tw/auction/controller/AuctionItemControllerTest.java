@@ -89,7 +89,7 @@ public class AuctionItemControllerTest extends TestBase {
     }
 
     @Test
-    public void should_change_auction_apply_success_when_refund_margin() throws Exception {
+    public void should_change_auction_apply_success_when_not_during_auction() throws Exception {
 
         // given
         long actionItemId = 1L;
@@ -105,5 +105,24 @@ public class AuctionItemControllerTest extends TestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is("SUCCESS")))
                 .andExpect(jsonPath("$.message", is("退款成功，保证金将在3个工作日内退还")));
+    }
+
+    @Test
+    public void should_not_change_auction_apply_when_during_auction() throws Exception {
+
+        // given
+        long actionItemId = 2L;
+        RefundMarginResultModel refundMarginFailedModel = RefundMarginResultModel.builder()
+                .refundResult(RefundResult.FAIL).build();
+
+        Mockito.when(auctionService.refundMargin(any()))
+                .thenReturn(refundMarginFailedModel);
+
+        // when
+        mockMvc.perform(post("/auction-items/" + actionItemId + "/margin-refund")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code", is("AUCTION_IS_STARTED")))
+                .andExpect(jsonPath("$.message", is("拍卖进行期间，不能退还保证金")));
     }
 }

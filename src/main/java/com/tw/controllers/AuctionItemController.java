@@ -3,6 +3,7 @@ package com.tw.controllers;
 import com.tw.controllers.dtos.PayMarginResponse;
 import com.tw.controllers.dtos.RefundMarginResponse;
 import com.tw.enums.PaymentResult;
+import com.tw.enums.RefundResult;
 import com.tw.services.AuctionService;
 import com.tw.services.models.PayMarginModel;
 import com.tw.services.models.PayMarginResultModel;
@@ -46,8 +47,16 @@ public class AuctionItemController {
     public ResponseEntity<RefundMarginResponse> refundMargin(@PathVariable("aid") Long auctionItemId) {
         RefundMarginModel refundMarginModel = RefundMarginModel.builder().auctionItemId(auctionItemId).build();
         RefundMarginResultModel refundMarginResultModel = auctionService.refundMargin(refundMarginModel);
-        RefundMarginResponse refundMarginResponse = RefundMarginResponse.builder()
-                .code("SUCCESS").message("退款成功，保证金将在3个工作日内退还").build();
+        RefundMarginResponse refundMarginResponse = RefundMarginResponse.builder().build();
+        if (refundMarginResultModel.getRefundResult().equals(RefundResult.SUCCESS)) {
+            refundMarginResponse.setCode("SUCCESS");
+            refundMarginResponse.setMessage("退款成功，保证金将在3个工作日内退还");
+            return ResponseEntity.ok().body(refundMarginResponse);
+        } else if (refundMarginResultModel.getRefundResult().equals(RefundResult.FAIL)) {
+            refundMarginResponse.setCode("AUCTION_IS_STARTED");
+            refundMarginResponse.setMessage("拍卖进行期间，不能退还保证金");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(refundMarginResponse);
+        }
         return ResponseEntity.ok(refundMarginResponse);
     }
 }
