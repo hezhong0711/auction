@@ -1,0 +1,31 @@
+spring:
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      use-new-id-generator-mappings: false
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: root
+    hikari:
+      maximum-pool-size: 100
+      minimum-idle: 50
+    url: jdbc:mysql://localhost:60000/tw_auction?characterEncoding=utf8
+  boot:
+    mariadb4j:
+      databaseName: tw_auction
+  flyway:
+    locations: classpath:db/migration,classpath:db/data
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+
+logging:
+  config: classpath:logback-json.xml
+  level:
+    org:
+      hibernate:
+        type: error
