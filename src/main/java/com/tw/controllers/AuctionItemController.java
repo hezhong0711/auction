@@ -1,10 +1,13 @@
 package com.tw.controllers;
 
 import com.tw.controllers.dtos.PayMarginResponse;
+import com.tw.controllers.dtos.RefundMarginResponse;
 import com.tw.enums.PaymentResult;
 import com.tw.services.AuctionService;
 import com.tw.services.models.PayMarginModel;
 import com.tw.services.models.PayMarginResultModel;
+import com.tw.services.models.RefundMarginModel;
+import com.tw.services.models.RefundMarginResultModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +40,14 @@ public class AuctionItemController {
         payMarginResponse.setCode("SUCCESS");
         payMarginResponse.setMessage("支付成功");
         return ResponseEntity.ok(payMarginResponse);
+    }
+
+    @PostMapping("/{aid}/margin-refund")
+    public ResponseEntity<RefundMarginResponse> refundMargin(@PathVariable("aid") Long auctionItemId) {
+        RefundMarginModel refundMarginModel = RefundMarginModel.builder().auctionItemId(auctionItemId).build();
+        RefundMarginResultModel refundMarginResultModel = auctionService.refundMargin(refundMarginModel);
+        RefundMarginResponse refundMarginResponse = RefundMarginResponse.builder()
+                .code("SUCCESS").message("退款成功，保证金将在3个工作日内退还").build();
+        return ResponseEntity.ok(refundMarginResponse);
     }
 }

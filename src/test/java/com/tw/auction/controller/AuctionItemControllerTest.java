@@ -3,8 +3,10 @@ package com.tw.auction.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tw.auction.base.TestBase;
 import com.tw.enums.PaymentResult;
+import com.tw.enums.RefundResult;
 import com.tw.services.AuctionService;
 import com.tw.services.models.PayMarginResultModel;
+import com.tw.services.models.RefundMarginResultModel;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,5 +86,24 @@ public class AuctionItemControllerTest extends TestBase {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code", is("PAYMENT_SYSTEM_NOT_AVAILABLE")))
                 .andExpect(jsonPath("$.message", is("与支付系统失去联系，请重试")));
+    }
+
+    @Test
+    public void should_change_auction_apply_success_when_refund_margin() throws Exception {
+
+        // given
+        long actionItemId = 1L;
+        RefundMarginResultModel refundMarginSuccessModel = RefundMarginResultModel.builder()
+                .paymentResult(RefundResult.SUCCESS).build();
+
+        Mockito.when(auctionService.refundMargin(any()))
+                .thenReturn(refundMarginSuccessModel);
+
+        // when
+        mockMvc.perform(post("/auction-items/" + actionItemId + "/margin-refund")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is("SUCCESS")))
+                .andExpect(jsonPath("$.message", is("退款成功，保证金将在3个工作日内退还")));
     }
 }

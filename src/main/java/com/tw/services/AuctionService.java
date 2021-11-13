@@ -9,6 +9,8 @@ import com.tw.repository.AuctionApply;
 import com.tw.repository.AuctionApplyRespository;
 import com.tw.services.models.PayMarginModel;
 import com.tw.services.models.PayMarginResultModel;
+import com.tw.services.models.RefundMarginModel;
+import com.tw.services.models.RefundMarginResultModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,4 +48,7 @@ public class AuctionService {
         return payMarginResultModel;
     }
 
+    public RefundMarginResultModel refundMargin(RefundMarginModel refundMarginModel) {
+        return RefundMarginResultModel.builder().build();
+    }
 }
