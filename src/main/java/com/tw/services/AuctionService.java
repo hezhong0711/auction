@@ -2,9 +2,12 @@ package com.tw.services;
 
 import com.tw.enums.MarginStatus;
 import com.tw.enums.PaymentResult;
+import com.tw.enums.RefundResult;
 import com.tw.feigns.PayOnlineClient;
 import com.tw.feigns.dtos.PayOnlineRequestFeignDto;
 import com.tw.feigns.dtos.PayOnlineResponseFeignDto;
+import com.tw.mqs.PayOnlineMessageSender;
+import com.tw.mqs.dtos.PayOnlineMessage;
 import com.tw.repository.AuctionApply;
 import com.tw.repository.AuctionApplyRespository;
 import com.tw.services.models.PayMarginModel;
@@ -22,6 +25,8 @@ public class AuctionService {
     private AuctionApplyRespository auctionApplyRespository;
     @Autowired
     private PayOnlineClient payOnlineClient;
+    @Autowired
+    private PayOnlineMessageSender payOnlineMessageSender;
 
     public PayMarginResultModel payMargin(PayMarginModel payMarginModel) {
         AuctionApply auctionApply = auctionApplyRespository.findById(payMarginModel.getAuctionItemId())
@@ -49,6 +54,15 @@ public class AuctionService {
     }
 
     public RefundMarginResultModel refundMargin(RefundMarginModel refundMarginModel) {
+        AuctionApply auctionApply = auctionApplyRespository.findById(refundMarginModel.getAuctionItemId())
+                .orElseThrow(RuntimeException::new);
+
+        PayOnlineMessage payOnlineMessage = PayOnlineMessage.builder()
+                .type("wechat").price(auctionApply.getMarginPrice()).build();
+        boolean mqResult = payOnlineMessageSender.send(payOnlineMessage);
+        if (mqResult) {
+            return RefundMarginResultModel.builder().refundResult(RefundResult.SUCCESS).build();
+        }
         return RefundMarginResultModel.builder().build();
     }
 }

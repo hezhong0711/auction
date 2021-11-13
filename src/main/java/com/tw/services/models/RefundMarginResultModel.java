@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RefundMarginResultModel {
-    private RefundResult paymentResult;
+    private RefundResult refundResult;
 }

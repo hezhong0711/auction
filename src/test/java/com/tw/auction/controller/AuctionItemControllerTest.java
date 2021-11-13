@@ -94,7 +94,7 @@ public class AuctionItemControllerTest extends TestBase {
         // given
         long actionItemId = 1L;
         RefundMarginResultModel refundMarginSuccessModel = RefundMarginResultModel.builder()
-                .paymentResult(RefundResult.SUCCESS).build();
+                .refundResult(RefundResult.SUCCESS).build();
 
         Mockito.when(auctionService.refundMargin(any()))
                 .thenReturn(refundMarginSuccessModel);
