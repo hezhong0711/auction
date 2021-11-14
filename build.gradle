@@ -44,6 +44,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation group: 'io.springfox', name: 'springfox-boot-starter', version: '3.0.0'
+    testImplementation group: 'org.mock-server', name: 'mockserver-netty', version: '5.11.1'
+
+
 }
 
 dependencyManagement {

@@ -47,6 +47,7 @@ public class AuctionServiceTest extends TestBase {
 
     @Test
     public void should_pay_margin_success_given_pay_online_success() throws TimeoutException {
+        // given
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
@@ -59,9 +60,11 @@ public class AuctionServiceTest extends TestBase {
         Mockito.when(payOnlineClient.pay(any())).thenReturn(
                 PayOnlineResponseFeignDto.builder().code("SUCCESS").message("支付成功").build());
 
+        // when
         PayMarginModel payMarginModel = PayMarginModel.builder().auctionItemId(accidentItemId).build();
         PayMarginResultModel payMarginResultModel = auctionService.payMargin(payMarginModel);
 
+        // then
         Assertions.assertNotNull(payMarginResultModel);
         Assertions.assertEquals(payMarginResultModel.getPaymentResult(), PaymentResult.SUCCESS);
 
@@ -69,6 +72,7 @@ public class AuctionServiceTest extends TestBase {
 
     @Test
     public void should_pay_margin_failed_given_pay_online_failed() throws TimeoutException {
+        // given
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
@@ -81,9 +85,11 @@ public class AuctionServiceTest extends TestBase {
         Mockito.when(payOnlineClient.pay(any())).thenReturn(
                 PayOnlineResponseFeignDto.builder().code("NO_ENOUGH_MONEY").message("支付失败，余额不足").build());
 
+        // when
         PayMarginModel payMarginModel = PayMarginModel.builder().auctionItemId(accidentItemId).build();
         PayMarginResultModel payMarginResultModel = auctionService.payMargin(payMarginModel);
 
+        // then
         Assertions.assertNotNull(payMarginResultModel);
         Assertions.assertEquals(payMarginResultModel.getPaymentResult(), PaymentResult.FAIL);
 
@@ -91,6 +97,7 @@ public class AuctionServiceTest extends TestBase {
 
     @Test
     public void should_return_time_out_status_given_pay_online_unavailable() throws TimeoutException {
+        // given
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
@@ -102,16 +109,19 @@ public class AuctionServiceTest extends TestBase {
 
         Mockito.when(payOnlineClient.pay(any())).thenThrow(TimeoutException.class);
 
+        // when
         PayMarginModel payMarginModel = PayMarginModel.builder().auctionItemId(accidentItemId).build();
         PayMarginResultModel payMarginResultModel = auctionService.payMargin(payMarginModel);
 
+        // then
         Assertions.assertNotNull(payMarginResultModel);
         Assertions.assertEquals(payMarginResultModel.getPaymentResult(), PaymentResult.TIME_OUT);
 
     }
 
     @Test
-    public void should_refund_margin_success_given_not_during_auction() throws TimeoutException, JsonProcessingException {
+    public void should_refund_margin_success_given_not_during_auction() throws JsonProcessingException {
+        // given
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
@@ -123,9 +133,11 @@ public class AuctionServiceTest extends TestBase {
 
         Mockito.when(payOnlineMessageSender.send(any())).thenReturn(true);
 
+        // when
         RefundMarginModel refundMarginModel = RefundMarginModel.builder().auctionItemId(accidentItemId).build();
         RefundMarginResultModel refundMarginResultModel = auctionService.refundMargin(refundMarginModel);
 
+        // then
         Assertions.assertNotNull(refundMarginResultModel);
         Assertions.assertEquals(refundMarginResultModel.getRefundResult(), RefundResult.SUCCESS);
 
@@ -134,16 +146,18 @@ public class AuctionServiceTest extends TestBase {
 
     @Test
     public void should_refund_margin_failed_given_during_auction() throws JsonProcessingException {
+        // given
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
                 .id(1L).marginStatus(MarginStatus.PAY).auctionStatus(AuctionStatus.START).accidentItemId(accidentItemId)
                 .build()));
 
-
+        // when
         RefundMarginModel refundMarginModel = RefundMarginModel.builder().auctionItemId(accidentItemId).build();
         RefundMarginResultModel refundMarginResultModel = auctionService.refundMargin(refundMarginModel);
 
+        // then
         Assertions.assertNotNull(refundMarginResultModel);
         Assertions.assertEquals(refundMarginResultModel.getRefundResult(), RefundResult.FAIL);
 
@@ -151,6 +165,7 @@ public class AuctionServiceTest extends TestBase {
 
     @Test
     public void should_refund_margin_success_given_not_during_auction_and_pay_online_system_unavailable() throws JsonProcessingException {
+        // given
         long accidentItemId = 1L;
 
         Mockito.when(auctionApplyRespository.findById(any())).thenReturn(Optional.of(AuctionApply.builder()
@@ -161,9 +176,11 @@ public class AuctionServiceTest extends TestBase {
 
         Mockito.when(payOnlineMessageSender.send(any())).thenReturn(false);
 
+        // when
         RefundMarginModel refundMarginModel = RefundMarginModel.builder().auctionItemId(accidentItemId).build();
         RefundMarginResultModel refundMarginResultModel = auctionService.refundMargin(refundMarginModel);
 
+        // then
         Assertions.assertNotNull(refundMarginResultModel);
         Assertions.assertEquals(refundMarginResultModel.getRefundResult(), RefundResult.SUCCESS);
 
